@@ -198,7 +198,9 @@ blogRouter.get('/summarize/:id' ,async (c)=>{
 
 	try {
 		const id = c.req.param("id")
+
 		const OPENAI_API_KEY = c.env.OPENAI_API_KEY
+
 		const prisma = new PrismaClient({
 			datasourceUrl: c.env.DATABASE_URL,
 		}).$extends(withAccelerate())
@@ -208,12 +210,18 @@ blogRouter.get('/summarize/:id' ,async (c)=>{
 				id:id
 			},
 			select:{
-				content:true
+				content:true ,
+				summary:true
 			}
 		})
 
 		if(!post){
 			return c.json({ message:" post not found "} , 404)
+		}
+
+		if(post.summary){
+			{console.log("from the saved side")}
+			return c.json({summary : post.summary})
 		}
 
 		const content = post.content
@@ -242,7 +250,7 @@ blogRouter.get('/summarize/:id' ,async (c)=>{
 				where:{ id:id },
 				data:{ summary }
 			})
-
+			{console.log("from the saved side")}
 			return c.json({ summary });
 	} 
 	catch (error) {
