@@ -28,15 +28,4 @@ The application is built using the following technologies:
 ### Additional Integrations
 - **OpenAI GPT API**: For generating blog post summaries
 
-## Installation and Setup
 
-### Prerequisites
-- Node.js installed
-- A Postgres database
-- Access to OpenAI API
-
-### Steps
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/your-username/your-repo.git
-   cd your-repo
