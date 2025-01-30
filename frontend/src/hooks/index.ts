@@ -78,3 +78,22 @@ export const useSummary = ({ id }: {id:string}) =>{
         summary
     }
 }
+
+export const useName = () =>{
+
+    const [username , setUsername] = useState("")
+
+    useEffect(()=>{
+        axios.get(`${BACKEND_URL}/api/v1/user/name` , {
+            headers:{
+                Authorization : localStorage.getItem("token")
+            }
+        }).then(response =>{
+            setUsername(response.data.name)
+        })
+    }, [])
+
+    return {
+        username
+    }
+}

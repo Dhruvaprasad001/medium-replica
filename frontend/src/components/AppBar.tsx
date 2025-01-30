@@ -1,16 +1,15 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { AuthorImage } from "./BlogCards";
+import { useName } from "../hooks";
 
 export const AppBar = () => {
     const navigate = useNavigate();
-    const [showLogout, setShowLogout] = useState(false);
+    const [ showLogout, setShowLogout ] = useState(false);
+    const { username }  = useName() 
 
     const handleLogout = () => {
-        // Clear authentication token from localStorage
         localStorage.removeItem("token");
-
-        // Redirect to login page
         navigate("/signin");
     };
 
@@ -35,7 +34,7 @@ export const AppBar = () => {
                     onClick={() => setShowLogout(!showLogout)}
                     className="focus:outline-none"
                 >
-                    <AuthorImage size="big" name="Dhurva" />
+                    <AuthorImage size="big" name={username} />
                 </button>
                 {showLogout && (
                     <div
