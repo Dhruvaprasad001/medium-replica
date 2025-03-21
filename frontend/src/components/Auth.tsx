@@ -56,7 +56,7 @@ export const Auth = ({type}: {type: 'signin' | 'signup'}) =>{
                             email:e.target.value,
                         })
                     }}/>
-                    <LabbledInput label="Password" type='password' placeholder="Enter your password" onChange={e=>{
+                    <LabbledInput label="Password" type='password' placeholder="password (minimum 5 character)" onChange={e=>{
                         setPostInputs({
                             ...postInputs,
                             password:e.target.value,
