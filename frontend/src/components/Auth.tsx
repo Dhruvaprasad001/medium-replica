@@ -43,20 +43,20 @@ export const Auth = ({type}: {type: 'signin' | 'signup'}) =>{
                     </div>
                     <div>
                     {type === "signup" && (
-                                <LabbledInput label="Name" placeholder="Enter your name" onChange={e => {
+                                <LabbledInput label="Name" placeholder="Enter name" onChange={e => {
                                     setPostInputs({
                                         ...postInputs,
                                         name: e.target.value,
                                     })
                                 }} />
                             )}
-                    <LabbledInput label="Username" placeholder="Enter your email" onChange={e=>{
+                    <LabbledInput label="Username" placeholder="Enter email" onChange={e=>{
                         setPostInputs({
                             ...postInputs,
                             email:e.target.value,
                         })
                     }}/>
-                    <LabbledInput label="Password" type='password' placeholder="password (minimum 5 character)" onChange={e=>{
+                    <LabbledInput label="Password" type='password' placeholder="Enter password (minimum 5 character)" onChange={e=>{
                         setPostInputs({
                             ...postInputs,
                             password:e.target.value,
