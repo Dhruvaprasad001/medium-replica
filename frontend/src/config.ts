@@ -1,1 +1,1 @@
-export const BACKEND_URL = "https://backend.dhruvaprasad001.workers.dev"
+export const BACKEND_URL = "https://backend.dhruvaprasad002.workers.dev"

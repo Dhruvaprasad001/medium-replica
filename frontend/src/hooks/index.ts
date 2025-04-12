@@ -13,27 +13,50 @@ export interface Blog {
     }
 }
 
-export const useBlog = ({ id }: {id:string}) => {
-    const [loading, setLoading] = useState(true);
-    const [blog, setBlog] = useState<Blog>();
+    export const useBlog = ({ id }: {id:string}) => {
+        const [loading, setLoading] = useState(true);
+        const [blog, setBlog] = useState<Blog>();
 
-    useEffect(() => {
-        axios.get(`${BACKEND_URL}/api/v1/blog/${id}`,{
-            headers:{
-                Authorization: localStorage.getItem("token")
-            }
-        })
-            .then(response => {
-                setBlog(response.data.post);
-                setLoading(false);
+        useEffect(() => {
+            axios.get(`${BACKEND_URL}/api/v1/blog/${id}`,{
+                headers:{
+                    Authorization: localStorage.getItem("token")
+                }
             })
-    }, [id])
+                .then(response => {
+                    setBlog(response.data.post);
+                    setLoading(false);
+                })
+        }, [id])
 
-    return {
-        loading,
-        blog
+        return {
+            loading,
+            blog
+        }
     }
-}
+
+    export const useBLOG = ({ title }: {title:string}) => {
+        const [loading, setLoading] = useState(true);
+        const [blog, setBlog] = useState<Blog>();
+
+        useEffect(() => {
+            axios.get(`${BACKEND_URL}/api/v1/blog/by-title/${title}`,{
+                headers:{
+                    Authorization: localStorage.getItem("token")
+                }
+            })
+                .then(response => {
+                    setBlog(response.data.post);
+                    setLoading(false);
+                })
+        }, [title])
+
+        return {
+            loading,
+            blog
+        }
+    }
+
 
 export const useBlogs = () => {
     const [loading, setLoading] = useState(true);
@@ -95,5 +118,24 @@ export const useName = () =>{
 
     return {
         username
+    }
+}
+
+export const useDesig = () =>{
+
+    const [designation , setDesignation] = useState("")
+
+    useEffect(()=>{
+        axios.get(`${BACKEND_URL}/api/v1/user/name` , {
+            headers:{
+                Authorization : localStorage.getItem("token")
+            }
+        }).then(response =>{
+            setDesignation(response.data.description)
+        })
+    }, [])
+
+    return {
+        designation
     }
 }

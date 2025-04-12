@@ -17,10 +17,10 @@ export const AppBar = () => {
         <div className="w-full h-15 flex justify-between px-10 pb-4 pt-4 border-b border-slate-300 mb-8">
             <div className="flex flex-col justify-center font-semibold text-xl">
                 <Link to={'/blogs'}>
-                    Medium
+                    Edu Bridge
                 </Link>
             </div>
-            <div className="relative">
+            <div className="relative ">
                 <Link to={'/publish'}>
                     <button
                         type="button"

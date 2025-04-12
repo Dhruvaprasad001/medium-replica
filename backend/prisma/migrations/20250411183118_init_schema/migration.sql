@@ -4,6 +4,8 @@ CREATE TABLE "User" (
     "email" TEXT NOT NULL,
     "name" TEXT,
     "password" TEXT NOT NULL,
+    "description" TEXT,
+    "marks" INTEGER NOT NULL DEFAULT 0,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
@@ -16,6 +18,7 @@ CREATE TABLE "Post" (
     "published" BOOLEAN NOT NULL DEFAULT false,
     "authorId" TEXT NOT NULL,
     "publishedDate" TIMESTAMP(3) NOT NULL,
+    "summary" TEXT,
 
     CONSTRAINT "Post_pkey" PRIMARY KEY ("id")
 );

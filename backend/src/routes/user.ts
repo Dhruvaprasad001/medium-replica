@@ -43,6 +43,7 @@ userRouter.post('/signup', async (c) => {
         })
     }
     catch(e){
+        console.log(e)
         c.status(411)
         return c.json({
             message:"Invalid"
@@ -132,4 +133,6 @@ userRouter.get("/name" , async(c)=>{
         })
     }
 })
+
+
 

@@ -1,7 +1,0 @@
-name = "backend"
-main = "src/index.ts"
-compatibility_date = "2024-12-17"
-
-compatibility_flags = [ "nodejs_compat" ]
-
-[vars]

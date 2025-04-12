@@ -9,7 +9,7 @@ export const Auth = ({type}: {type: 'signin' | 'signup'}) =>{
     const [postInputs , setPostInputs] = useState<SignupInput >({
         email:"",
         password:"",
-        name:""
+        name:"",
     })
 
     async function sendRequest() {
@@ -19,7 +19,7 @@ export const Auth = ({type}: {type: 'signin' | 'signup'}) =>{
             localStorage.setItem("token", jwt);
             navigate("/blogs");
         } catch(e) {
-            alert("Error while signing up")
+            console.log(e);
         }
     }
 
@@ -43,20 +43,20 @@ export const Auth = ({type}: {type: 'signin' | 'signup'}) =>{
                     </div>
                     <div>
                     {type === "signup" && (
-                                <LabbledInput label="Name" placeholder="Enter your name" onChange={e => {
+                                <LabbledInput label="Name" placeholder="Enter name" onChange={e => {
                                     setPostInputs({
                                         ...postInputs,
                                         name: e.target.value,
                                     })
                                 }} />
                             )}
-                    <LabbledInput label="Username" placeholder="Enter your email" onChange={e=>{
+                    <LabbledInput label="Username" placeholder="Enter email" onChange={e=>{
                         setPostInputs({
                             ...postInputs,
                             email:e.target.value,
                         })
                     }}/>
-                    <LabbledInput label="Password" type='password' placeholder="Enter your password" onChange={e=>{
+                    <LabbledInput label="Password" type='password' placeholder="Enter password (minimum 5 character)" onChange={e=>{
                         setPostInputs({
                             ...postInputs,
                             password:e.target.value,
