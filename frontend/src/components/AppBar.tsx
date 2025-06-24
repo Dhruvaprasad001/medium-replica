@@ -18,10 +18,10 @@ export const AppBar = () => {
         navigate("/signin");
     };
 
-    const handleAuthorClick = (authorId: string, authorName: string) => {
+    const handleAuthorClick = (authorId: string) => {
         setSearchTerm("");
         setShowSearchResults(false);
-        // Navigate to author page - you'll need to create this route
+        // Navigate to author page
         navigate(`/author/${authorId}`);
     };
 
@@ -84,7 +84,7 @@ export const AppBar = () => {
                                     {results.map((author) => (
                                         <div 
                                             key={author.id}
-                                            onClick={() => handleAuthorClick(author.id, author.name)}
+                                            onClick={() => handleAuthorClick(author.id)}
                                             className="p-3 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0"
                                         >
                                             <div className="flex items-center space-x-3">
