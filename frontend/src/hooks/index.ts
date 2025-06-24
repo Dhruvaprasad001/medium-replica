@@ -139,3 +139,84 @@ export const useDesig = () =>{
         designation
     }
 }
+
+export interface Author {
+    id: string;
+    name: string;
+    description: string;
+    postCount: number;
+}
+
+export const useSearchAuthors = ({ searchTerm }: {searchTerm:string}) =>{
+
+    const [loading, setLoading] = useState(false)
+    const [results, setResults] = useState<Author[]>([])
+
+    useEffect(()=>{
+        if (!searchTerm || searchTerm.trim().length === 0) {
+            setResults([]);
+            setLoading(false);
+            return;
+        }
+
+        setLoading(true);
+        axios.get(`${BACKEND_URL}/api/v1/blog/search/authors/${searchTerm.trim()}`,{
+            headers:{
+                Authorization : localStorage.getItem("token")
+            }
+        }).then(response =>{
+            setResults(response.data.authors || [])
+            setLoading(false)
+        }).catch(error => {
+            console.error("Search error:", error);
+            setResults([]);
+            setLoading(false);
+        })
+    }, [searchTerm])
+
+    return {
+        loading,
+        results
+    }
+}
+
+export interface AuthorWithPosts {
+    author: {
+        id: string;
+        name: string;
+        description: string;
+        email: string;
+    };
+    posts: Blog[];
+    totalPosts: number;
+}
+
+export const useAuthorPosts = ({ authorId }: {authorId: string}) => {
+    const [loading, setLoading] = useState(true);
+    const [authorData, setAuthorData] = useState<AuthorWithPosts | null>(null);
+
+    useEffect(() => {
+        if (!authorId) return;
+
+        setLoading(true);
+        axios.get(`${BACKEND_URL}/api/v1/blog/author/${authorId}/posts`, {
+            headers: {
+                Authorization: localStorage.getItem("token")
+            }
+        })
+        .then(response => {
+            setAuthorData(response.data);
+            setLoading(false);
+        })
+        .catch(error => {
+            console.error("Error fetching author posts:", error);
+            setAuthorData(null);
+            setLoading(false);
+        });
+    }, [authorId]);
+
+    return {
+        loading,
+        authorData
+    };
+}

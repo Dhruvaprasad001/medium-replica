@@ -5,6 +5,7 @@ import { Blog } from './pages/Blog';
 import { Signup } from './pages/Signup';
 import { Blogs } from './pages/Blogs';
 import { Publish } from './pages/Publish';
+import { Author } from './pages/Author';
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
         <Route path="/blog/title/:title" element={<Blog />} />
         <Route path="/blogs" element={<Blogs />} />
         <Route path="/publish" element={<Publish />} />
+        <Route path="/author/:authorId" element={<Author />} />
       </Routes>
     </BrowserRouter>
   );
