@@ -151,6 +151,7 @@ blogRouter.get('/:id', async (c) => {
 				content:true,
 				id:true,
 				publishedDate:true,
+				likes:true,
 				author:{
 					select:{
 						name:true
@@ -466,3 +467,69 @@ blogRouter.get("/author/:authorId/posts", async (c) => {
         return c.json({ error: "Internal server error" }, 500);
     }
 });
+
+blogRouter.post("/like/:id", async (c) => {
+	const id = c.req.param("id")
+	const prisma = new PrismaClient({
+		datasourceUrl: c.env.DATABASE_URL,
+	}).$extends(withAccelerate())
+
+	try {
+		const post = await prisma.post.update({
+			where:{
+				id:id
+			},
+			data:{
+				likes:{
+					increment:1
+				}
+			},
+			select:{
+				likes:true
+			}
+		})
+		
+		return c.json({
+			likes:post.likes
+		})
+	} catch (error) {
+		console.error("Error liking post:", error);
+		c.status(500)
+		return c.json({
+			message:"something went wrong"
+		})
+	}
+})
+
+blogRouter.post("/unlike/:id", async (c) => {
+	const id = c.req.param("id")
+	const prisma = new PrismaClient({
+		datasourceUrl: c.env.DATABASE_URL,
+	}).$extends(withAccelerate())
+
+	try {
+		const post = await prisma.post.update({
+			where:{
+				id:id
+			},
+			data:{
+				likes:{
+					decrement:1
+				}
+			},
+			select:{
+				likes:true
+			}
+		})
+		
+		return c.json({
+			likes:post.likes
+		})
+	} catch (error) {
+		console.error("Error unliking post:", error);
+		c.status(500)
+		return c.json({
+			message:"something went wrong"
+		})
+	}
+})

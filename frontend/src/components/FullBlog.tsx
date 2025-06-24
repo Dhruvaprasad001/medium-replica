@@ -1,18 +1,43 @@
 import { useRef, useState } from 'react';
-import { Blog } from "../hooks";
+import { Blog, useLikePost } from "../hooks";
 import { AppBar } from "./AppBar";  
 import { AuthorImage } from "./BlogCards";
 import { BACKEND_URL } from "../config";
+import like from "../../public/thumb-up.svg"
+import likeInactive from "../../public/thumb-up-inactive.svg"
 
 export const FullBlog = ({ blog, summary }: { blog: Blog; summary: string }) => {
     const [showSummary, setShowSummary] = useState(false);
     const [audioUrl, setAudioUrl] = useState<string | null>(null);
     const [isLoadingTTS, setIsLoadingTTS] = useState(false);
+    const [isLiked, setIsLiked] = useState(false);
+    const [likesCount, setLikesCount] = useState(blog.likes || 0);
 
     const audioRef = useRef<HTMLAudioElement | null>(null);
+    const { likePost, unlikePost, isLiking } = useLikePost();
 
     const handleSummaryToggle = () => {
         setShowSummary(!showSummary);
+    };
+
+    const handleLikeToggle = async () => {
+        if (isLiking) return; // Prevent multiple clicks
+        
+        try {
+            if (isLiked) {
+                // User has liked it, so unlike it
+                const newLikesCount = await unlikePost(blog.id);
+                setLikesCount(newLikesCount);
+                setIsLiked(false);
+            } else {
+                // User hasn't liked it, so like it
+                const newLikesCount = await likePost(blog.id);
+                setLikesCount(newLikesCount);
+                setIsLiked(true);
+            }
+        } catch (error) {
+            console.error("Failed to toggle like:", error);
+        }
     };
 
     const handleTTS = async () => {
@@ -65,7 +90,26 @@ export const FullBlog = ({ blog, summary }: { blog: Blog; summary: string }) => 
             <div className="grid grid-cols-12 w-full px-12 pt-10 pb-20">
                 <div className="px-12 lg:col-span-8 col-span-12">
                     <div className="font-bold text-5xl pb-5">{blog.title}</div>
-                    <div className="text-slate-400 pb-4">Posted on {date()}</div>
+                    <div className="flex flex-row gap-20">
+                        <div className="text-slate-400 pb-4">Posted on {date()}</div>
+                        <div className="flex flex-row gap-2 items-center">
+                            <button 
+                                onClick={handleLikeToggle}
+                                disabled={isLiking}
+                                className="flex items-center hover:opacity-80 transition-opacity disabled:opacity-50"
+                                title={isLiked ? "Unlike this post" : "Like this post"}
+                            >
+                                <img 
+                                    src={isLiked ? like : likeInactive} 
+                                    alt="like" 
+                                    width={20} 
+                                    height={20} 
+                                    className="w-6 h-6 mb-4" 
+                                />
+                            </button>
+                            <div className="text-slate-400 pb-4">{likesCount}</div>
+                        </div>
+                    </div>
                     <div className="text-xl" style={{ whiteSpace: 'pre-wrap' }}>
                         {blog.content}
                     </div>

@@ -7,7 +7,8 @@ export interface Blog {
     "content": string;
     "title": string;
     "id": number,
-    "publishedDate":string
+    "publishedDate":string,
+    "likes":number,
     "author": {
         "name": string
     }
@@ -218,5 +219,49 @@ export const useAuthorPosts = ({ authorId }: {authorId: string}) => {
     return {
         loading,
         authorData
+    };
+}
+
+export const useLikePost = () => {
+    const [isLiking, setIsLiking] = useState(false);
+
+    const likePost = async (postId: number) => {
+        setIsLiking(true);
+        try {
+            const response = await axios.post(`${BACKEND_URL}/api/v1/blog/like/${postId}`, {}, {
+                headers: {
+                    Authorization: localStorage.getItem("token")
+                }
+            });
+            setIsLiking(false);
+            return response.data.likes;
+        } catch (error) {
+            console.error("Error liking post:", error);
+            setIsLiking(false);
+            throw error;
+        }
+    };
+
+    const unlikePost = async (postId: number) => {
+        setIsLiking(true);
+        try {
+            const response = await axios.post(`${BACKEND_URL}/api/v1/blog/unlike/${postId}`, {}, {
+                headers: {
+                    Authorization: localStorage.getItem("token")
+                }
+            });
+            setIsLiking(false);
+            return response.data.likes;
+        } catch (error) {
+            console.error("Error unliking post:", error);
+            setIsLiking(false);
+            throw error;
+        }
+    };
+
+    return {
+        likePost,
+        unlikePost,
+        isLiking
     };
 }
