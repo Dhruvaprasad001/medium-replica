@@ -354,3 +354,115 @@ blogRouter.get("/tts/:id", async (c) => {
         return c.json({ error: "Internal server error" }, 500);
     }
 });
+
+// Search for author names using fuzzy search
+blogRouter.get("/search/authors/:searchTerm", async (c) => {
+    try {
+        const searchTerm = c.req.param("searchTerm");
+        
+        if (!searchTerm || searchTerm.trim().length === 0) {
+            return c.json({ error: "Search term is required" }, 400);
+        }
+
+        const prisma = new PrismaClient({
+            datasourceUrl: c.env.DATABASE_URL,
+        }).$extends(withAccelerate());
+
+        // Get unique author names that match the search term using ILIKE (case-insensitive fuzzy search)
+        const authors = await prisma.user.findMany({
+            where: {
+                name: {
+                    contains: searchTerm.trim(),
+                    mode: "insensitive", // This provides ILIKE functionality
+                },
+                posts: {
+                    some: {}, // Only include users who have at least one post
+                },
+            },
+            select: {
+                id: true,
+                name: true,
+                description: true,
+                _count: {
+                    select: {
+                        posts: true, // Count of posts by this author
+                    },
+                },
+            },
+            orderBy: {
+                name: "asc",
+            },
+            take: 10, // Limit results to 10 for performance
+        });
+
+        console.log("Searching authors with term:", searchTerm);
+        console.log("Found authors:", authors.length);
+
+        return c.json({ 
+            authors: authors.map(author => ({
+                id: author.id,
+                name: author.name,
+                description: author.description,
+                postCount: author._count.posts,
+            }))
+        });
+    } catch (error) {
+        console.error("Author search error:", error);
+        return c.json({ error: "Internal server error" }, 500);
+    }
+});
+
+// Get all posts by author ID using proper join
+blogRouter.get("/author/:authorId/posts", async (c) => {
+    try {
+        const authorId = c.req.param("authorId");
+        const prisma = new PrismaClient({
+            datasourceUrl: c.env.DATABASE_URL,
+        }).$extends(withAccelerate());
+
+        // Single query with proper join to get author and their posts
+        const authorWithPosts = await prisma.user.findUnique({
+            where: { id: authorId },
+            select: {
+                id: true,
+                name: true,
+                description: true,
+                email: true,
+                posts: {
+                    select: {
+                        id: true,
+                        title: true,
+                        content: true,
+                        summary: true,
+                        publishedDate: true,
+                        published: true,
+                    },
+                    orderBy: {
+                        publishedDate: "desc",
+                    },
+                },
+            },
+        });
+
+        if (!authorWithPosts) {
+            return c.json({ error: "Author not found" }, 404);
+        }
+
+        console.log("Getting posts for author ID:", authorId);
+        console.log("Found posts:", authorWithPosts.posts.length);
+        
+        return c.json({ 
+            author: {
+                id: authorWithPosts.id,
+                name: authorWithPosts.name,
+                description: authorWithPosts.description,
+                email: authorWithPosts.email,
+            },
+            posts: authorWithPosts.posts,
+            totalPosts: authorWithPosts.posts.length
+        });
+    } catch (error) {
+        console.error("Get author posts error:", error);
+        return c.json({ error: "Internal server error" }, 500);
+    }
+});
