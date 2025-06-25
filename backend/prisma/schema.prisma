@@ -8,23 +8,63 @@ datasource db {
 }
 
 model User {
-  id          String  @id @default(uuid())
-  email       String  @unique
+  id          String      @id @default(uuid())
+  email       String      @unique
   name        String?
   password    String
   description String?
-  marks       Int     @default(0)
+  marks       Int         @default(0)
+  createdAt   DateTime?   @default(now())
+  updatedAt   DateTime?   @updatedAt
   posts       Post[]
+  preferences UserGenre[] // user genre preferences
+  likes       Like[] // posts liked by user
 }
 
 model Post {
-  id            String   @id @default(uuid())
+  id            String    @id @default(uuid())
   title         String
   content       String
-  published     Boolean  @default(false)
-  authorId      String
+  published     Boolean   @default(false)
   publishedDate DateTime
   summary       String?
-  likes         Int      @default(0)
-  author        User     @relation(fields: [authorId], references: [id])
+  likes         Int       @default(0) // denormalized count for performance
+  createdAt     DateTime? @default(now())
+  updatedAt     DateTime? @updatedAt
+  authorId      String
+  genreId       String?
+  author        User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  genre         Genre?    @relation(fields: [genreId], references: [id])
+  likedBy       Like[] // users who liked this post
+}
+
+model Genre {
+  id          String      @id @default(uuid())
+  name        String      @unique
+  description String?
+  createdAt   DateTime    @default(now())
+  posts       Post[]
+  users       UserGenre[] // users who prefer this genre
+}
+
+model UserGenre {
+  userId    String
+  genreId   String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  genre     Genre    @relation(fields: [genreId], references: [id], onDelete: Cascade)
+
+  @@id([userId, genreId])
+  @@map("user_genres")
+}
+
+model Like {
+  userId    String
+  postId    String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@id([userId, postId])
+  @@map("likes")
 }
