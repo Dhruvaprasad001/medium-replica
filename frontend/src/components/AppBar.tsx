@@ -1,14 +1,14 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
 import { AuthorImage } from "./BlogCards";
-import { useName } from "../hooks";
+import { useUserInfo } from "../hooks";
 import { useSearchAuthors } from "../hooks";
 
 export const AppBar = () => {
     const navigate = useNavigate();
     const [ showLogout, setShowLogout ] = useState(false);
     const [ showSearchResults, setShowSearchResults ] = useState(false);
-    const { username }  = useName() 
+    const { username }  = useUserInfo() 
     const [searchTerm, setSearchTerm] = useState("");
     const { loading, results } = useSearchAuthors({ searchTerm });
     const searchRef = useRef<HTMLDivElement>(null);

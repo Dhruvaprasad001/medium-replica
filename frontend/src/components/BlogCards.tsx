@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom"
-import { date } from "./FullBlog"
+import { useMemo } from "react"
 
 interface BlogCardsInput{
     authorName:string 
@@ -8,23 +8,43 @@ interface BlogCardsInput{
     publishDate:string
     id:number
 }
+
 export const BlogCards = ({
     id,
     authorName ,
     title,
     content,
 }:BlogCardsInput) =>{
+    
+    // Memoize expensive calculations
+    const currentDate = useMemo(() => {
+        const date = new Date();
+        return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+    }, []);
+    
+    const readingTime = useMemo(() => {
+        const words = content.split(/\s+/).length;
+        const averageWordsPerMinute = 200;
+        return Math.ceil(words / averageWordsPerMinute);
+    }, [content]);
+    
+    const truncatedContent = useMemo(() => {
+        return content.slice(0, 100) + "...";
+    }, [content]);
+    
+    const displayName = authorName || "Anonymous";
+
     return <div className="px-3 pt-3 border-b border-slate-200 pb-4 ">
             <div className="flex pb-2">
-                <AuthorImage size="small" name={authorName ? authorName : "Anonymus"}/> 
+                <AuthorImage size="small" name={displayName}/> 
                 <div className="flex justify-center flex-col font-extralight mx-1 text-sm text-slate-800 ">
-                    {authorName ? authorName : "Anonymus"}
+                    {displayName}
                 </div> 
                 <div className="flex justify-center flex-col px-1">
                     <Circle/>
                 </div>
                 <div className="flex justify-center flex-col font-thin text-slate-500 text-sm">
-                    {date()}
+                    {currentDate}
                 </div>
             </div>
             <Link to={`/blog/${id}`}>
@@ -33,13 +53,14 @@ export const BlogCards = ({
             </div>
             </Link>
             <div className="text-md font-thin">
-                {content.slice(0, 100)+ "..."}
+                {truncatedContent}
             </div>
             <div className="text-sm font-thin text-slate-400 mt-4">
-                {`${calculateReadingTime(content)} minute(s) read`}
+                {`${readingTime} minute(s) read`}
             </div>   
     </div>
 }
+
 export function AuthorImage({ name, size }: { name: string, size: 'big' | 'small' }) {
     const sizeClass = size === 'big' ? 'w-9 h-9' : 'w-7 h-7';
 
@@ -52,15 +73,8 @@ export function AuthorImage({ name, size }: { name: string, size: 'big' | 'small
     );
 }
 
-
 function Circle(){
     return <div className="rounded-full h-1 w-1  bg-gray-500 ml-1 mr-1">
         
     </div>
 }
-    const calculateReadingTime = (content: string) => {
-        const words = content.split(/\s+/).length;  // Split content by spaces and count words
-        const averageWordsPerMinute = 200;  // Average reading speed in words per minute
-        const minutes = Math.ceil(words / averageWordsPerMinute); // Round up to the nearest whole number
-        return minutes;
-    };

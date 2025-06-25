@@ -1,5 +1,4 @@
 import { ChangeEvent, useState } from "react"
-import { AppBar } from "../components/AppBar"
 import axios from "axios"
 import { BACKEND_URL } from "../config"
 import { useNavigate } from "react-router-dom"
@@ -11,7 +10,6 @@ export const Publish = () =>{
     const navigate = useNavigate()
 
     return <div>    
-        <AppBar />
         <div>
 
             <div className="max-w-5xl mx-auto  ">

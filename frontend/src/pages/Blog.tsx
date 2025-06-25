@@ -1,12 +1,11 @@
 import { useParams } from "react-router-dom";
 import { FullBlog } from "../components/FullBlog";
-import { useBlog, useBLOG, useSummary } from "../hooks";
+import { useBlog, useBLOG } from "../hooks";
 import { Spinner } from "../components/Spinner";
 
 export const Blog = () => {
     const { id, title } = useParams();  // Get id or title from the URL
-    const { loading, blog } = id ? useBlog({ id }) : useBLOG({ title: title || "" });
-    const { summary } = useSummary({ id: id || "" });
+    const { loading, blog, error } = id ? useBlog({ id }) : useBLOG({ title: title || "" });
 
     if (loading) {
         return (
@@ -14,6 +13,22 @@ export const Blog = () => {
                 <div className="flex justify-center">
                     <Spinner />
                 </div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="flex flex-col justify-center items-center mt-8">
+                <div className="text-red-500 text-lg">
+                    {error}
+                </div>
+                <button 
+                    onClick={() => window.location.reload()}
+                    className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                >
+                    Try Again
+                </button>
             </div>
         );
     }
@@ -28,7 +43,7 @@ export const Blog = () => {
 
     return (
         <div>
-            <FullBlog blog={blog} summary={summary} />
+            <FullBlog blog={blog} />
         </div>
     );
 };

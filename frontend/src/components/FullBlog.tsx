@@ -1,12 +1,11 @@
-import { useRef, useState } from 'react';
-import { Blog, useLikePost } from "../hooks";
-import { AppBar } from "./AppBar";  
+import { useRef, useState, useMemo, useEffect } from 'react';
+import { Blog, useLikePost, useSummary } from "../hooks";
 import { AuthorImage } from "./BlogCards";
 import { BACKEND_URL } from "../config";
 import like from "../../public/thumb-up.svg"
 import likeInactive from "../../public/thumb-up-inactive.svg"
 
-export const FullBlog = ({ blog, summary }: { blog: Blog; summary: string }) => {
+export const FullBlog = ({ blog }: { blog: Blog }) => {
     const [showSummary, setShowSummary] = useState(false);
     const [audioUrl, setAudioUrl] = useState<string | null>(null);
     const [isLoadingTTS, setIsLoadingTTS] = useState(false);
@@ -15,6 +14,26 @@ export const FullBlog = ({ blog, summary }: { blog: Blog; summary: string }) => 
 
     const audioRef = useRef<HTMLAudioElement | null>(null);
     const { likePost, unlikePost, isLiking } = useLikePost();
+    
+    // Only fetch summary when user wants to see it
+    const { summary, error: summaryError, loading: summaryLoading } = useSummary({ 
+        id: showSummary ? blog.id.toString() : "" 
+    });
+
+    // Memoize the date to prevent unnecessary recalculations
+    const currentDate = useMemo(() => {
+        const date = new Date();
+        return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+    }, []);
+
+    // Cleanup audio URL on unmount to prevent memory leaks
+    useEffect(() => {
+        return () => {
+            if (audioUrl) {
+                URL.revokeObjectURL(audioUrl);
+            }
+        };
+    }, [audioUrl]);
 
     const handleSummaryToggle = () => {
         setShowSummary(!showSummary);
@@ -41,6 +60,8 @@ export const FullBlog = ({ blog, summary }: { blog: Blog; summary: string }) => 
     };
 
     const handleTTS = async () => {
+        if (isLoadingTTS) return; // Prevent multiple simultaneous requests
+        
         setIsLoadingTTS(true);
         const token = localStorage.getItem("token");
 
@@ -66,8 +87,10 @@ export const FullBlog = ({ blog, summary }: { blog: Blog; summary: string }) => 
             const blob = await response.blob();
             const url = URL.createObjectURL(blob);
 
-            // If audio is already set to same blob, do nothing
-            if (audioUrl) URL.revokeObjectURL(audioUrl); // cleanup old blob
+            // Cleanup old blob URL before setting new one
+            if (audioUrl) {
+                URL.revokeObjectURL(audioUrl);
+            }
 
             setAudioUrl(url);
 
@@ -86,12 +109,11 @@ export const FullBlog = ({ blog, summary }: { blog: Blog; summary: string }) => 
 
     return (
         <div>
-            <AppBar />
             <div className="grid grid-cols-12 w-full px-12 pt-10 pb-20">
                 <div className="px-12 lg:col-span-8 col-span-12">
                     <div className="font-bold text-5xl pb-5">{blog.title}</div>
                     <div className="flex flex-row gap-20">
-                        <div className="text-slate-400 pb-4">Posted on {date()}</div>
+                        <div className="text-slate-400 pb-4">Posted on {currentDate}</div>
                         <div className="flex flex-row gap-2 items-center">
                             <button 
                                 onClick={handleLikeToggle}
@@ -175,28 +197,35 @@ export const FullBlog = ({ blog, summary }: { blog: Blog; summary: string }) => 
                     </div>
 
                     {/* Summary Renderer */}
-                    {showSummary && <SummaryRenderer summary={summary} />}
+                    {showSummary && (
+                        <SummaryRenderer 
+                            summary={summaryError ? "Summary could not be loaded" : summary} 
+                            loading={summaryLoading}
+                        />
+                    )}
                 </div>
             </div>
         </div>
     );
 };
 
-export function date() {
-    const currentDate = new Date();
-    const formattedDate = `${currentDate.getDate()}/${currentDate.getMonth() + 1}/${currentDate.getFullYear()}`;
-    return formattedDate;
-}
-
 interface SummaryRendererProps {
     summary: string;
+    loading?: boolean;
 }
 
-function SummaryRenderer({ summary }: SummaryRendererProps) {
+function SummaryRenderer({ summary, loading }: SummaryRendererProps) {
     return (
         <div>
             <h3 className="text-xl font-semibold pt-8">Summary:</h3>
-            <p>{summary || "No summary available"}</p>
+            {loading ? (
+                <div className="flex items-center space-x-2">
+                    <div className="animate-spin h-4 w-4 border-2 border-blue-500 border-t-transparent rounded-full"></div>
+                    <span>Generating summary...</span>
+                </div>
+            ) : (
+                <p>{summary || "No summary available"}</p>
+            )}
         </div>
     );
 }

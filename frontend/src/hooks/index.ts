@@ -17,44 +17,86 @@ export interface Blog {
     export const useBlog = ({ id }: {id:string}) => {
         const [loading, setLoading] = useState(true);
         const [blog, setBlog] = useState<Blog>();
+        const [error, setError] = useState<string | null>(null);
 
         useEffect(() => {
+            if (!id) return;
+            
+            const abortController = new AbortController();
+            
+            setLoading(true);
+            setError(null);
+            
             axios.get(`${BACKEND_URL}/api/v1/blog/${id}`,{
                 headers:{
                     Authorization: localStorage.getItem("token")
-                }
+                },
+                signal: abortController.signal
             })
                 .then(response => {
-                    setBlog(response.data.post);
-                    setLoading(false);
+                    if (!abortController.signal.aborted) {
+                        setBlog(response.data.post);
+                        setLoading(false);
+                    }
                 })
+                .catch(error => {
+                    if (!abortController.signal.aborted) {
+                        console.error("Error fetching blog:", error);
+                        setError("Failed to load blog");
+                        setLoading(false);
+                    }
+                });
+                
+            return () => abortController.abort();
         }, [id])
 
         return {
             loading,
-            blog
+            blog,
+            error
         }
     }
 
     export const useBLOG = ({ title }: {title:string}) => {
         const [loading, setLoading] = useState(true);
         const [blog, setBlog] = useState<Blog>();
+        const [error, setError] = useState<string | null>(null);
 
         useEffect(() => {
+            if (!title) return;
+            
+            const abortController = new AbortController();
+            
+            setLoading(true);
+            setError(null);
+            
             axios.get(`${BACKEND_URL}/api/v1/blog/by-title/${title}`,{
                 headers:{
                     Authorization: localStorage.getItem("token")
-                }
+                },
+                signal: abortController.signal
             })
                 .then(response => {
-                    setBlog(response.data.post);
-                    setLoading(false);
+                    if (!abortController.signal.aborted) {
+                        setBlog(response.data.post);
+                        setLoading(false);
+                    }
                 })
+                .catch(error => {
+                    if (!abortController.signal.aborted) {
+                        console.error("Error fetching blog by title:", error);
+                        setError("Failed to load blog");
+                        setLoading(false);
+                    }
+                });
+                
+            return () => abortController.abort();
         }, [title])
 
         return {
             loading,
-            blog
+            blog,
+            error
         }
     }
 
@@ -62,8 +104,11 @@ export interface Blog {
 export const useBlogs = () => {
     const [loading, setLoading] = useState(true);
     const [blogs, setBlogs] = useState<Blog[]>([]);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
+        setLoading(true);
+        setError(null);
         axios.get(`${BACKEND_URL}/api/v1/blog/bulk`,{
             headers:{
                 Authorization: localStorage.getItem("token")
@@ -73,72 +118,87 @@ export const useBlogs = () => {
                 setBlogs(response.data.posts);
                 setLoading(false);
             })
+            .catch(error => {
+                console.error("Error fetching blogs:", error);
+                setError("Failed to load blogs");
+                setLoading(false);
+            });
     }, [])
 
     return {
         loading,
-        blogs
+        blogs,
+        error
     }
 }
 
 export const useSummary = ({ id }: {id:string}) =>{
     
-    const [loadingData , setLoadingData] = useState(true)
+    const [loading , setLoading] = useState(true)
     const [summary , setSummary] = useState<string>("")
+    const [error, setError] = useState<string | null>(null);
     
     useEffect(()=>{
+        if (!id) return;
+        
+        const abortController = new AbortController();
+        
+        setLoading(true);
+        setError(null);
+        
         axios.get(`${BACKEND_URL}/api/v1/blog/summarize/${id}` , {
             headers:{
                 Authorization : localStorage.getItem("token")
-            }
+            },
+            signal: abortController.signal
         }).then(response =>{
-            setSummary(response.data.summary)
-            setLoadingData(false)
-        })
+            if (!abortController.signal.aborted) {
+                setSummary(response.data.summary)
+                setLoading(false)
+            }
+        }).catch(error => {
+            if (!abortController.signal.aborted) {
+                console.error("Error fetching summary:", error);
+                setError("Failed to load summary");
+                setLoading(false);
+            }
+        });
+        
+        return () => abortController.abort();
     }, [id])
 
     return {
-        loadingData,
-        summary
+        loading,
+        summary,
+        error
     }
 }
 
-export const useName = () =>{
+export const useUserInfo = () => {
+    const [loading, setLoading] = useState(true);
+    const [username, setUsername] = useState("");
+    const [designation, setDesignation] = useState("");
 
-    const [username , setUsername] = useState("")
-
-    useEffect(()=>{
-        axios.get(`${BACKEND_URL}/api/v1/user/name` , {
-            headers:{
-                Authorization : localStorage.getItem("token")
+    useEffect(() => {
+        axios.get(`${BACKEND_URL}/api/v1/user/name`, {
+            headers: {
+                Authorization: localStorage.getItem("token")
             }
-        }).then(response =>{
-            setUsername(response.data.name)
-        })
-    }, [])
+        }).then(response => {
+            setUsername(response.data.name);
+            setDesignation(response.data.description);
+            setLoading(false);
+        }).catch(error => {
+            console.error("Error fetching user info:", error);
+            setLoading(false);
+        });
+    }, []);
 
     return {
-        username
-    }
-}
-
-export const useDesig = () =>{
-
-    const [designation , setDesignation] = useState("")
-
-    useEffect(()=>{
-        axios.get(`${BACKEND_URL}/api/v1/user/name` , {
-            headers:{
-                Authorization : localStorage.getItem("token")
-            }
-        }).then(response =>{
-            setDesignation(response.data.description)
-        })
-    }, [])
-
-    return {
+        loading,
+        username,
         designation
-    }
+    };
 }
 
 export interface Author {
@@ -160,19 +220,25 @@ export const useSearchAuthors = ({ searchTerm }: {searchTerm:string}) =>{
             return;
         }
 
-        setLoading(true);
-        axios.get(`${BACKEND_URL}/api/v1/blog/search/authors/${searchTerm.trim()}`,{
-            headers:{
-                Authorization : localStorage.getItem("token")
-            }
-        }).then(response =>{
-            setResults(response.data.authors || [])
-            setLoading(false)
-        }).catch(error => {
-            console.error("Search error:", error);
-            setResults([]);
-            setLoading(false);
-        })
+        // Debounce the search to avoid excessive API calls
+        const debounceTimer = setTimeout(() => {
+            setLoading(true);
+            axios.get(`${BACKEND_URL}/api/v1/blog/search/authors/${searchTerm.trim()}`,{
+                headers:{
+                    Authorization : localStorage.getItem("token")
+                }
+            }).then(response =>{
+                setResults(response.data.authors || [])
+                setLoading(false)
+            }).catch(error => {
+                console.error("Search error:", error);
+                setResults([]);
+                setLoading(false);
+            })
+        }, 300); // 300ms delay
+
+        // Cleanup function to cancel the previous timer
+        return () => clearTimeout(debounceTimer);
     }, [searchTerm])
 
     return {
@@ -195,11 +261,13 @@ export interface AuthorWithPosts {
 export const useAuthorPosts = ({ authorId }: {authorId: string}) => {
     const [loading, setLoading] = useState(true);
     const [authorData, setAuthorData] = useState<AuthorWithPosts | null>(null);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         if (!authorId) return;
 
         setLoading(true);
+        setError(null);
         axios.get(`${BACKEND_URL}/api/v1/blog/author/${authorId}/posts`, {
             headers: {
                 Authorization: localStorage.getItem("token")
@@ -211,6 +279,7 @@ export const useAuthorPosts = ({ authorId }: {authorId: string}) => {
         })
         .catch(error => {
             console.error("Error fetching author posts:", error);
+            setError("Failed to load author data");
             setAuthorData(null);
             setLoading(false);
         });
@@ -218,7 +287,8 @@ export const useAuthorPosts = ({ authorId }: {authorId: string}) => {
 
     return {
         loading,
-        authorData
+        authorData,
+        error
     };
 }
 

@@ -1,5 +1,4 @@
 import { useParams } from "react-router-dom";
-import { AppBar } from "../components/AppBar";
 import { BlogCards } from "../components/BlogCards";
 import { BlogSkeleton } from "../components/BlogSkeleton";
 import { Spinner } from "../components/Spinner";
@@ -7,12 +6,11 @@ import { useAuthorPosts } from "../hooks";
 
 export const Author = () => {
     const { authorId } = useParams<{ authorId: string }>();
-    const { loading, authorData } = useAuthorPosts({ authorId: authorId || "" });
+    const { loading, authorData, error } = useAuthorPosts({ authorId: authorId || "" });
 
     if (loading) {
         return (
             <div>
-                <AppBar />
                 <div className="flex justify-center">
                     <div className="max-w-xl">
                         <div className="p-4">
@@ -27,10 +25,25 @@ export const Author = () => {
         );
     }
 
+    if (error) {
+        return (
+            <div className="flex flex-col justify-center items-center mt-8">
+                <div className="text-red-500 text-lg">
+                    {error}
+                </div>
+                <button 
+                    onClick={() => window.location.reload()}
+                    className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                >
+                    Try Again
+                </button>
+            </div>
+        );
+    }
+
     if (!authorData) {
         return (
             <div>
-                <AppBar />
                 <div className="flex justify-center">
                     <div className="max-w-xl p-4">
                         <div className="text-center text-gray-500">
@@ -47,7 +60,6 @@ export const Author = () => {
 
     return (
         <div>
-            <AppBar />
             <div className="flex justify-center">
                 <div className="max-w-4xl w-full px-4">
                     {/* Author Header */}
